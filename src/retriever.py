@@ -10,7 +10,6 @@ load_dotenv()
 
 ROOT       = Path(__file__).resolve().parent.parent
 VECTOR_DIR = ROOT / "vectorstore"
-API_KEY    = os.getenv("OPENAI_API_KEY")
 
 PROMPT_TEMPLATE = """You are an expert UAE real estate analyst assistant.
 Answer the question using ONLY the context provided below.
@@ -29,12 +28,32 @@ Answer (with source citation):"""
 _chain = None
 
 
+def _get_api_key() -> str:
+    """
+    Read API key from Streamlit secrets (deployment)
+    or .env file (local development).
+    """
+    try:
+        import streamlit as st
+        return st.secrets["OPENAI_API_KEY"]
+    except Exception:
+        pass
+
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise ValueError("OPENAI_API_KEY not found in secrets or .env")
+    return key
+
+
 def get_chain():
+    """Build the RAG chain once and cache it."""
     global _chain
     if _chain is None:
+        api_key = _get_api_key()
+
         embeddings = OpenAIEmbeddings(
             model="text-embedding-3-small",
-            openai_api_key=API_KEY
+            openai_api_key=api_key
         )
         vectorstore = Chroma(
             persist_directory=str(VECTOR_DIR),
@@ -47,7 +66,7 @@ def get_chain():
         llm = ChatOpenAI(
             model="gpt-3.5-turbo",
             temperature=0,
-            openai_api_key=API_KEY
+            openai_api_key=api_key
         )
         prompt = PromptTemplate(
             template=PROMPT_TEMPLATE,
@@ -64,8 +83,10 @@ def get_chain():
 
 
 def ask(question: str) -> dict:
+    """Ask the RAG chain a question."""
     chain  = get_chain()
     result = chain.invoke({"query": question})
+
     seen, sources = set(), []
     for doc in result["source_documents"]:
         source = doc.metadata.get("source", "unknown")
@@ -77,4 +98,5 @@ def ask(question: str) -> dict:
                 "filename": Path(source).name,
                 "page":     page,
             })
+
     return {"answer": result["result"], "sources": sources}

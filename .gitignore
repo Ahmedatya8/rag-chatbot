@@ -5,11 +5,12 @@ __pycache__/
 venv/
 env/
 
-# Vector store — rebuilt from PDFs, not committed
-vectorstore/
 
 # PDFs — too large for Git
 data/pdfs/*.pdf
+
+# Vector store — rebuilt from PDFs, not committed
+vectorstore/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -20,3 +21,6 @@ data/pdfs/*.pdf
 # Secrets
 .env
 *.env
+
+# Streamlit secrets
+.streamlit/secrets.toml
