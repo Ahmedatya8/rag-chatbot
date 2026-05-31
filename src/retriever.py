@@ -1,7 +1,4 @@
-# ── Write production retriever module ─────────────────────────────────────────
-# Streamlit app imports ask() from here — same pattern as Project 1
-
-retriever_code = '''import os
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -18,7 +15,7 @@ API_KEY    = os.getenv("OPENAI_API_KEY")
 PROMPT_TEMPLATE = """You are an expert UAE real estate analyst assistant.
 Answer the question using ONLY the context provided below.
 If the answer is not found in the context, say exactly:
-"I dont have enough information in the provided documents to answer this."
+"I don't have enough information in the provided documents to answer this."
 
 Always cite which document and page number your answer comes from.
 
@@ -29,7 +26,6 @@ Question: {question}
 
 Answer (with source citation):"""
 
-# ── Lazy loading — build once, reuse forever ──────────────────────────────────
 _chain = None
 
 
@@ -82,10 +78,3 @@ def ask(question: str) -> dict:
                 "page":     page,
             })
     return {"answer": result["result"], "sources": sources}
-'''
-
-src_path = ROOT / 'src' / 'retriever.py'
-with open(src_path, 'w') as f:
-    f.write(retriever_code)
-
-print(f"src/retriever.py written ✅")
